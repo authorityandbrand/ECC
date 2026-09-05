@@ -321,3 +321,36 @@ When reviewing AI-generated changes, prioritize:
 Cost-awareness check:
 - Flag workflows that escalate to higher-cost models without clear reasoning need.
 - Recommend defaulting to lower-cost tiers for deterministic refactors.
+
+
+## Persistence (Session Continuity)
+
+At the end of every review session, write findings to disk:
+
+```bash
+PERSIST_DIR="$HOME/.claude/code-reviewer"
+mkdir -p "$PERSIST_DIR"
+```
+
+**`last-run.md`** — overwrite each run with this structure:
+```
+# Code Review — <ISO timestamp>
+Project: <path>
+
+## Findings
+| Severity | File:Line | Issue |
+|----------|-----------|-------|
+| HIGH | ... | ... |
+
+## Recurring Patterns Observed
+- <pattern class> — seen N times
+```
+
+**`patterns.md`** — append each run (never overwrite):
+```
+## <ISO timestamp> — <project>
+Patterns: <comma-separated recurring bug classes>
+---
+```
+
+On next invocation, read `last-run.md` to surface deferred MEDIUM/LOW items and `patterns.md` to flag recurring issue classes early in the review.

@@ -57,3 +57,28 @@ For each finding:
 - issue
 - impact
 - fix recommendation
+
+
+## Persistence (Session Continuity)
+
+Write findings to disk at the end of every run so they survive session boundaries:
+
+```bash
+PERSIST_DIR="$HOME/.claude/silent-failure-hunter"
+mkdir -p "$PERSIST_DIR"
+```
+
+**`last-run.md`** — overwrite each run:
+```
+# Silent Failure Hunter — <ISO timestamp>
+Project: <path>
+
+## Findings
+| Severity | Location | Issue |
+|----------|----------|-------|
+
+## Summary
+N critical, N high, N medium, N low
+```
+
+On next invocation, read `last-run.md` to surface deferred items without re-scanning.

@@ -162,30 +162,52 @@ if os.path.exists(path):
     except: pass
 
 existing.setdefault("includeCoAuthoredBy", False)
+h = os.path.expanduser('~')
+clv2 = f"{h}/.claude/skills/continuous-learning-v2/hooks/observe.sh"
 existing["hooks"] = {
-  "PreToolUse": [{
-    "matcher": "Bash",
-    "hooks": [
-      {
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": f"node {h}/.claude/hooks/audit-surface.js",
+          "description": "Session-start: surface stale audit or critical agent-audit findings (fires once per OS session)"
+        },
+        {
+          "type": "command",
+          "command": f"node {h}/.claude/hooks/quiet-noisy-commands.js",
+          "description": "Rewrite noisy install/build/test commands to emit only errors, failures, and summary"
+        }
+      ]
+    },
+    {
+      "matcher": "*",
+      "hooks": [{
         "type": "command",
-        "command": f"node {os.path.expanduser('~')}/.claude/hooks/audit-surface.js",
-        "description": "Session-start: surface stale audit or critical agent-audit findings (fires once per OS session)"
-      },
-      {
+        "command": f"CLAUDE_CODE_ENTRYPOINT=cli {clv2} pre",
+        "description": "Continuous learning: capture pre-tool observations for instinct extraction"
+      }]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [{
         "type": "command",
-        "command": f"node {os.path.expanduser('~')}/.claude/hooks/quiet-noisy-commands.js",
-        "description": "Rewrite noisy install/build/test commands to emit only errors, failures, and summary"
-      }
-    ]
-  }],
-  "PostToolUse": [{
-    "matcher": "Bash",
-    "hooks": [{
-      "type": "command",
-      "command": f"node {os.path.expanduser('~')}/.claude/hooks/truncate-bash-output.js",
-      "description": "Safety-net: truncate any Bash output still over 8000 chars to its tail"
-    }]
-  }]
+        "command": f"node {h}/.claude/hooks/truncate-bash-output.js",
+        "description": "Safety-net: truncate any Bash output still over 8000 chars to its tail"
+      }]
+    },
+    {
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": f"CLAUDE_CODE_ENTRYPOINT=cli {clv2} post",
+        "description": "Continuous learning: capture post-tool observations for instinct extraction"
+      }]
+    }
+  ]
 }
 with open(path, 'w') as f: json.dump(existing, f, indent=2)
 print(f"  wrote {path}")
