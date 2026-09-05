@@ -121,8 +121,12 @@ process.stdin.on('end', () => {
 });
 HOOK
 
-# ── 4. Write truncate-bash-output PostToolUse safety-net ──────────────────────
-echo "[4/6] Writing truncate-bash-output hook..."
+# ── 4. Write audit-surface PreToolUse session-start hook ─────────────────────
+echo "[4a/6] Writing audit-surface hook..."
+cp "$REPO_DIR/scripts/hooks/audit-surface.js" "$HOOKS_DIR/audit-surface.js"
+
+# ── 4b. Write truncate-bash-output PostToolUse safety-net ─────────────────────
+echo "[4b/6] Writing truncate-bash-output hook..."
 cat > "$HOOKS_DIR/truncate-bash-output.js" << 'HOOK'
 #!/usr/bin/env node
 // PostToolUse safety-net: truncates any Bash output over 8000 chars to its tail.
@@ -161,11 +165,18 @@ existing.setdefault("includeCoAuthoredBy", False)
 existing["hooks"] = {
   "PreToolUse": [{
     "matcher": "Bash",
-    "hooks": [{
-      "type": "command",
-      "command": f"node {os.path.expanduser('~')}/.claude/hooks/quiet-noisy-commands.js",
-      "description": "Rewrite noisy install/build/test commands to emit only errors, failures, and summary"
-    }]
+    "hooks": [
+      {
+        "type": "command",
+        "command": f"node {os.path.expanduser('~')}/.claude/hooks/audit-surface.js",
+        "description": "Session-start: surface stale audit or critical agent-audit findings (fires once per OS session)"
+      },
+      {
+        "type": "command",
+        "command": f"node {os.path.expanduser('~')}/.claude/hooks/quiet-noisy-commands.js",
+        "description": "Rewrite noisy install/build/test commands to emit only errors, failures, and summary"
+      }
+    ]
   }],
   "PostToolUse": [{
     "matcher": "Bash",
