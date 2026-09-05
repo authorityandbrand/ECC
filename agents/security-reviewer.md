@@ -114,4 +114,40 @@ For detailed vulnerability patterns, code examples, report templates, and PR rev
 
 ---
 
+## Persistence (Session Continuity)
+
+After completing every review, write findings to disk so they survive session boundaries:
+
+```bash
+PERSIST_DIR="$HOME/.claude/security-reviewer"
+mkdir -p "$PERSIST_DIR"
+```
+
+**`last-run.md`** — overwrite each run:
+```
+# Security Review — <ISO timestamp>
+Project: <path or repo name>
+
+## Open Findings
+| Severity | File:Line | Issue | Status |
+|----------|-----------|-------|--------|
+| CRITICAL | ... | ... | open |
+| HIGH | ... | ... | open |
+
+## Acknowledged (not fixed this session)
+...
+```
+
+**`history.md`** — append each run (never overwrite):
+```
+## <ISO timestamp> — <project>
+CRITICAL: N, HIGH: N, MEDIUM: N, LOW: N
+Key findings: <one-line summary>
+---
+```
+
+Write both files at the end of every review, even if findings are zero (timestamp proves it ran). This allows the next session to pick up open items without re-scanning.
+
+---
+
 **Remember**: Security is not optional. One vulnerability can cost users real financial losses. Be thorough, be paranoid, be proactive.
