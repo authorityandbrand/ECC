@@ -12,7 +12,8 @@ Load it at runtime:
 source ~/.ecc/team-workspace.env
 # Exports: ECC_DRIVE_ROOT, ECC_DRIVE_AGENTS, ECC_DRIVE_MEMORY,
 #          ECC_DRIVE_COST_LOGS, ECC_DRIVE_AUDIT, ECC_DRIVE_INSTINCTS,
-#          ECC_SHEETS_COST_ID, ECC_GWS_ACCOUNT
+#          ECC_SHEETS_COST_ID, ECC_GWS_ACCOUNT,
+#          ECC_WEBAPP_URL, ECC_WEBAPP_TOKEN
 ```
 
 To initialize for a new team member, run:
@@ -102,8 +103,10 @@ it internally uses CacheService (~5ms) → Sheets (~150ms) → BigQuery (analyti
 - `$ECC_WEBAPP_TOKEN` — bearer token (query param `token=`)
 
 **Script ID**: `1f-WjrlYNzwUmO65yYyMgCRR8uJJZBzMExLNcut7_pJ7K1zImebm1JQ76`
+**Deployment ID**: `AKfycbz9q8aa6oPGeA5aGqQE4xLsJ_hcfi_0lZVx2PTNWruzVIdG0p9GH-WCs_qNDf3dsYQo2Q` (v3)
+**OAuth scopes (full GWS set)**: Sheets, BigQuery, Drive, Gmail (send/read/modify), Calendar, Calendar Events, Docs, Presentations, Forms, Tasks, UrlFetch, ScriptApp, SendMail, Cloud Platform, userinfo
 
-### One-time setup (required after first deploy)
+### One-time setup (required after first deploy or scope change)
 
 Visit this URL while logged in as `$ECC_GWS_ACCOUNT` to authorize scopes and initialize BQ:
 ```
@@ -111,6 +114,11 @@ $ECC_WEBAPP_URL?action=setup&sheet_id=$ECC_SHEETS_COST_ID&secret=$ECC_WEBAPP_TOK
 ```
 This stores the sheet ID and secret token in Apps Script properties and creates the
 `ecc_team` BigQuery dataset + 5 tables (cost_log, agent_scores, audit_history, memory_entries, instincts).
+
+To re-authorize after a scope change, open the script editor and run any function:
+```
+https://script.google.com/d/1f-WjrlYNzwUmO65yYyMgCRR8uJJZBzMExLNcut7_pJ7K1zImebm1JQ76/edit
+```
 
 ### Endpoints (GET)
 
@@ -136,10 +144,10 @@ This stores the sheet ID and secret token in Apps Script properties and creates 
 ```bash
 source ~/.ecc/team-workspace.env
 # Health check
-curl -s "$ECC_WEBAPP_URL?action=health&token=$ECC_WEBAPP_TOKEN"
+curl -sL "$ECC_WEBAPP_URL?action=health&token=$ECC_WEBAPP_TOKEN"
 
 # Write cost row from hook
-curl -s -X POST "$ECC_WEBAPP_URL" \
+curl -sL -X POST "$ECC_WEBAPP_URL" \
   -H 'Content-Type: application/json' \
   -d "{\"action\":\"cost\",\"token\":\"$ECC_WEBAPP_TOKEN\",\"date\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"user\":\"$USER\",\"project\":\"ECC\",\"model_tier\":\"sonnet\",\"cost_usd\":0}"
 ```
@@ -149,7 +157,8 @@ GWS tools directly (Sheets/Drive MCP) for reads and richer operations.
 
 ## Constraints
 
-- **Web App authorization**: First use requires owner to visit the setup URL while logged in — one-time only.
+- **Web App authorization**: First use (and after scope changes) requires owner to run any function
+  in the script editor to grant OAuth permissions — one-time per scope change.
 - **No Cloudflare**: Wrangler CLI and D1 are not available. Web App is the cache layer.
 - **BigQuery**: `mcp__Legal_API__run_bigquery` is read-only for the legal_case dataset.
   The `ecc_team` dataset is written via the Apps Script Web App (BigQuery Advanced Service).
