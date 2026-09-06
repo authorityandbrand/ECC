@@ -50,6 +50,8 @@ ECC_DRIVE_COST_LOGS=$(prompt_or_env ECC_DRIVE_COST_LOGS "Drive: cost-logs/ subfo
 ECC_DRIVE_AUDIT=$(prompt_or_env ECC_DRIVE_AUDIT       "Drive: audit/ subfolder ID")
 ECC_DRIVE_INSTINCTS=$(prompt_or_env ECC_DRIVE_INSTINCTS "Drive: instincts/ subfolder ID")
 ECC_SHEETS_COST_ID=$(prompt_or_env ECC_SHEETS_COST_ID "Sheets: ECC Cost Tracking spreadsheet ID")
+ECC_WEBAPP_URL=$(prompt_or_env ECC_WEBAPP_URL         "Apps Script Web App URL (from team)")
+ECC_WEBAPP_TOKEN=$(prompt_or_env ECC_WEBAPP_TOKEN     "Apps Script Web App secret token")
 
 cat > "$ENV_FILE" << EOF
 # ECC Team Workspace — local config (do not commit)
@@ -62,6 +64,8 @@ export ECC_DRIVE_COST_LOGS="$ECC_DRIVE_COST_LOGS"
 export ECC_DRIVE_AUDIT="$ECC_DRIVE_AUDIT"
 export ECC_DRIVE_INSTINCTS="$ECC_DRIVE_INSTINCTS"
 export ECC_SHEETS_COST_ID="$ECC_SHEETS_COST_ID"
+export ECC_WEBAPP_URL="$ECC_WEBAPP_URL"
+export ECC_WEBAPP_TOKEN="$ECC_WEBAPP_TOKEN"
 EOF
 
 chmod 600 "$ENV_FILE"

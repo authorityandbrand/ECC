@@ -92,15 +92,69 @@ params: {
 }
 ```
 
+## Apps Script Web App Cache Layer
+
+The Apps Script Web App bridges the hook-vs-MCP gap: shell hooks call it via `curl`;
+it internally uses CacheService (~5ms) → Sheets (~150ms) → BigQuery (analytics dual-write).
+
+**Config** (loaded from `~/.ecc/team-workspace.env`):
+- `$ECC_WEBAPP_URL` — HTTPS endpoint
+- `$ECC_WEBAPP_TOKEN` — bearer token (query param `token=`)
+
+**Script ID**: `1f-WjrlYNzwUmO65yYyMgCRR8uJJZBzMExLNcut7_pJ7K1zImebm1JQ76`
+
+### One-time setup (required after first deploy)
+
+Visit this URL while logged in as `$ECC_GWS_ACCOUNT` to authorize scopes and initialize BQ:
+```
+$ECC_WEBAPP_URL?action=setup&sheet_id=$ECC_SHEETS_COST_ID&secret=$ECC_WEBAPP_TOKEN
+```
+This stores the sheet ID and secret token in Apps Script properties and creates the
+`ecc_team` BigQuery dataset + 5 tables (cost_log, agent_scores, audit_history, memory_entries, instincts).
+
+### Endpoints (GET)
+
+| action | params | returns |
+|--------|--------|---------|
+| `health` | `token` | `{status, sheet_id, bq_project, timestamp}` |
+| `pull` | `token`, `project?` | `{memory[], instincts[], cached, source}` |
+| `memory` | `token`, `project?` | `{rows[], cached}` |
+| `instincts` | `token` | `{rows[], cached}` |
+
+### Endpoints (POST — JSON body with `token`)
+
+| action | body fields | effect |
+|--------|-------------|--------|
+| `cost` | date, user, project, session_id, model_tier, tokens_in, tokens_out, cost_usd, agent_name, task_summary | Appends cost_log row, BQ dual-write |
+| `memory_write` | scope, tag, content, author | Appends memory_entries, BQ dual-write |
+| `instinct_write` | pattern, context, confidence, source_user | Appends instincts, BQ dual-write |
+| `audit` | agent_name, tier, gap_type, severity, finding, resolved | Appends audit_history, BQ dual-write |
+| `invalidate` | key? (or project?) | Clears CacheService entries |
+
+### Hook usage (curl)
+
+```bash
+source ~/.ecc/team-workspace.env
+# Health check
+curl -s "$ECC_WEBAPP_URL?action=health&token=$ECC_WEBAPP_TOKEN"
+
+# Write cost row from hook
+curl -s -X POST "$ECC_WEBAPP_URL" \
+  -H 'Content-Type: application/json' \
+  -d "{\"action\":\"cost\",\"token\":\"$ECC_WEBAPP_TOKEN\",\"date\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"user\":\"$USER\",\"project\":\"ECC\",\"model_tier\":\"sonnet\",\"cost_usd\":0}"
+```
+
+The Web App is the canonical async write path for hooks. Agent sessions can still call
+GWS tools directly (Sheets/Drive MCP) for reads and richer operations.
+
 ## Constraints
 
-- **MCP only**: Drive and GWS are only accessible from within a Claude Code agent session.
-  Shell hooks cannot call these tools — all sync must be agent-invoked (slash commands).
-- **BigQuery**: `mcp__Legal_API__run_bigquery` is read-only. Cannot create new datasets.
-  Use Sheets for structured team data. BigQuery write access = future upgrade path.
-- **Cloudflare D1**: No MCP tools or wrangler CLI available. Future fast-cache upgrade path.
+- **Web App authorization**: First use requires owner to visit the setup URL while logged in — one-time only.
+- **No Cloudflare**: Wrangler CLI and D1 are not available. Web App is the cache layer.
+- **BigQuery**: `mcp__Legal_API__run_bigquery` is read-only for the legal_case dataset.
+  The `ecc_team` dataset is written via the Apps Script Web App (BigQuery Advanced Service).
 
-## Cost Estimation (Sheets-based cache)
+## Cost Estimation
 
 | Operation | Latency | Notes |
 |-----------|---------|-------|

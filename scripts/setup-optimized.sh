@@ -125,6 +125,12 @@ HOOK
 echo "[4a/6] Writing audit-surface hook..."
 cp "$REPO_DIR/scripts/hooks/audit-surface.js" "$HOOKS_DIR/audit-surface.js"
 
+# ── 4c. Copy Web App pull/push hooks ─────────────────────────────────────────
+echo "[4c/6] Copying webapp-pull + webapp-push hooks..."
+cp "$REPO_DIR/scripts/hooks/webapp-pull.sh" "$HOOKS_DIR/webapp-pull.sh"
+cp "$REPO_DIR/scripts/hooks/webapp-push.sh" "$HOOKS_DIR/webapp-push.sh"
+chmod +x "$HOOKS_DIR/webapp-pull.sh" "$HOOKS_DIR/webapp-push.sh"
+
 # ── 4b. Write truncate-bash-output PostToolUse safety-net ─────────────────────
 echo "[4b/6] Writing truncate-bash-output hook..."
 cat > "$HOOKS_DIR/truncate-bash-output.js" << 'HOOK'
@@ -171,6 +177,11 @@ existing["hooks"] = {
       "hooks": [
         {
           "type": "command",
+          "command": f"bash {h}/.claude/hooks/webapp-pull.sh",
+          "description": "Session-start: pull team memory + instincts from Apps Script cache API (once per session)"
+        },
+        {
+          "type": "command",
           "command": f"node {h}/.claude/hooks/audit-surface.js",
           "description": "Session-start: surface stale audit or critical agent-audit findings (fires once per OS session)"
         },
@@ -205,6 +216,15 @@ existing["hooks"] = {
         "type": "command",
         "command": f"CLAUDE_CODE_ENTRYPOINT=cli {clv2} post",
         "description": "Continuous learning: capture post-tool observations for instinct extraction"
+      }]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [{
+        "type": "command",
+        "command": f"bash {h}/.claude/hooks/webapp-push.sh",
+        "description": "Session-end: push cost row to Apps Script cache API"
       }]
     }
   ]
@@ -259,7 +279,7 @@ HAIKU_COUNT=$(grep -l "^model: haiku" "$CLAUDE_DIR/agents/"*.md 2>/dev/null | wc
 SONNET_COUNT=$(grep -l "^model: sonnet" "$CLAUDE_DIR/agents/"*.md 2>/dev/null | wc -l)
 echo "  Rules:  $RULE_FILES files (~$RULE_TOK tokens)"
 echo "  Agents: $AGENT_COUNT total — haiku: $HAIKU_COUNT, sonnet: $SONNET_COUNT, opus: 0"
-echo "  Hooks:  quiet-noisy-commands (PreToolUse) + truncate-bash-output (PostToolUse)"
+echo "  Hooks:  webapp-pull (PreToolUse/Bash) + quiet-noisy-commands (PreToolUse/Bash) + truncate-bash-output (PostToolUse/Bash) + webapp-push (Stop)"
 echo ""
 echo "To add a language rule pack later:"
 echo "  bash scripts/setup-optimized.sh typescript"
