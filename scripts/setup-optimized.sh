@@ -40,7 +40,7 @@ KEEP_LANGS=("$@")   # any language names passed as CLI args
 for lang in "${ALL_LANGS[@]}"; do
   keep=false
   for k in "${KEEP_LANGS[@]}"; do
-    [[ "$k" == "$lang" ]] && keep=true && break
+    [[  "$k" == "$lang" ]] && keep=true && break
   done
   target="$CLAUDE_DIR/rules/ecc/$lang"
   if [ -d "$target" ] && [ "$keep" = false ]; then
@@ -125,11 +125,15 @@ HOOK
 echo "[4a/6] Writing audit-surface hook..."
 cp "$REPO_DIR/scripts/hooks/audit-surface.js" "$HOOKS_DIR/audit-surface.js"
 
-# ── 4c. Copy Web App pull/push hooks ─────────────────────────────────────────
-echo "[4c/6] Copying webapp-pull + webapp-push hooks..."
+# ── 4c. Copy Web App pull/push hooks + MCP server ────────────────────────────
+echo "[4c/6] Copying webapp-pull + webapp-push hooks and MCP server..."
 cp "$REPO_DIR/scripts/hooks/webapp-pull.sh" "$HOOKS_DIR/webapp-pull.sh"
 cp "$REPO_DIR/scripts/hooks/webapp-push.sh" "$HOOKS_DIR/webapp-push.sh"
 chmod +x "$HOOKS_DIR/webapp-pull.sh" "$HOOKS_DIR/webapp-push.sh"
+
+mkdir -p "$CLAUDE_DIR/mcp"
+cp "$REPO_DIR/scripts/mcp-server/team-workspace-mcp.js" "$CLAUDE_DIR/mcp/team-workspace-mcp.js"
+echo "  installed: ~/.claude/mcp/team-workspace-mcp.js"
 
 # ── 4b. Write truncate-bash-output PostToolUse safety-net ─────────────────────
 echo "[4b/6] Writing truncate-bash-output hook..."
@@ -228,6 +232,12 @@ existing["hooks"] = {
       }]
     }
   ]
+}
+existing.setdefault("mcpServers", {})
+existing["mcpServers"]["ecc-team-workspace"] = {
+    "command": "node",
+    "args": [f"{h}/.claude/mcp/team-workspace-mcp.js"],
+    "description": "ECC Team Workspace — team_health, team_pull, team_write_cost, team_write_memory, team_write_instinct, team_write_audit, team_invalidate"
 }
 with open(path, 'w') as f: json.dump(existing, f, indent=2)
 print(f"  wrote {path}")
