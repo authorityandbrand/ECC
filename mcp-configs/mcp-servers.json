@@ -213,6 +213,11 @@
       "command": "npx",
       "args": ["-y", "squish-memory"],
       "description": "Local-first persistent memory runtime for AI agents — MCP server for Claude Code, Cursor, OpenCode, Codex, Cline. Auto-captures context across sessions. 1-20ms recall, 283KB, no second LLM needed. Runs locally with SQLite. Supports cloud sync via Stripe checkout ($9-$99/mo). GitHub: https://github.com/michielhdoteth/squish | Docs: https://squishplugin.dev | (also available via local `squish run mcp`)"
+    },
+    "ecc-team-workspace": {
+      "command": "node",
+      "args": ["~/.claude/mcp/team-workspace-mcp.js"],
+      "description": "ECC Team Workspace — 7 native MCP tools wrapping the Apps Script Web App cache layer: team_health, team_pull, team_write_cost, team_write_memory, team_write_instinct, team_write_audit, team_invalidate. Reads ECC_WEBAPP_URL and ECC_WEBAPP_TOKEN from ~/.ecc/team-workspace.env. Install: bash scripts/setup-optimized.sh (copies server to ~/.claude/mcp/ and wires it into ~/.claude/settings.json). No Cloudflare dependency — all writes go via CacheService → Sheets → BigQuery through the Apps Script Web App."
     }
   },
   "_comments": {

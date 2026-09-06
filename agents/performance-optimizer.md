@@ -453,3 +453,28 @@ const fastCode = ...;
 ---
 
 **Remember**: Performance is a feature. Users notice speed. Every 100ms of improvement matters. Optimize for the 90th percentile, not the average.
+
+
+## Persistence (Session Continuity)
+
+Write findings to disk at the end of every run so they survive session boundaries:
+
+```bash
+PERSIST_DIR="$HOME/.claude/performance-optimizer"
+mkdir -p "$PERSIST_DIR"
+```
+
+**`last-run.md`** — overwrite each run:
+```
+# Performance Optimizer — <ISO timestamp>
+Project: <path>
+
+## Findings
+| Severity | Location | Issue |
+|----------|----------|-------|
+
+## Summary
+N critical, N high, N medium, N low
+```
+
+On next invocation, read `last-run.md` to surface deferred items without re-scanning.

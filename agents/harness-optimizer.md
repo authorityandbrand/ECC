@@ -53,3 +53,28 @@ Re-run `node scripts/harness-audit.js repo --format json` plus `node tests/run-a
 Input: `node scripts/harness-audit.js repo --format json` reports a PreToolUse hook exceeding the 200ms budget.
 Action: Define a Regression Eval for the existing hook tests, move the slow check to an async PostToolUse hook, then re-run the audit and `node tests/run-all.js`.
 Output: `EVAL REPORT: harness-optimization` with Capability Eval `hooks-latency` at pass@1, Regression Evals unaffected, Status: SHIP IT.
+
+
+## Persistence (Session Continuity)
+
+Write findings to disk at the end of every run so they survive session boundaries:
+
+```bash
+PERSIST_DIR="$HOME/.claude/harness-optimizer"
+mkdir -p "$PERSIST_DIR"
+```
+
+**`last-run.md`** — overwrite each run:
+```
+# Harness Optimizer — <ISO timestamp>
+Project: <path>
+
+## Findings
+| Severity | Location | Issue |
+|----------|----------|-------|
+
+## Summary
+N critical, N high, N medium, N low
+```
+
+On next invocation, read `last-run.md` to surface deferred items without re-scanning.
