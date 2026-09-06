@@ -3,21 +3,40 @@
 Reference skill for ECC team-shared infrastructure. Load before writing any command or script
 that reads from or writes to the shared Google Drive workspace or Cost Tracking Sheet.
 
-## Drive Workspace (authorityandbrand@gmail.com)
+## Configuration
+
+IDs are stored in `~/.ecc/team-workspace.env` (not in source control).
+Load it at runtime:
+
+```bash
+source ~/.ecc/team-workspace.env
+# Exports: ECC_DRIVE_ROOT, ECC_DRIVE_AGENTS, ECC_DRIVE_MEMORY,
+#          ECC_DRIVE_COST_LOGS, ECC_DRIVE_AUDIT, ECC_DRIVE_INSTINCTS,
+#          ECC_SHEETS_COST_ID, ECC_GWS_ACCOUNT
+```
+
+To initialize for a new team member, run:
+```bash
+bash scripts/init-team-workspace.sh
+```
+This script interactively prompts for the Drive folder IDs and writes `~/.ecc/team-workspace.env`.
+Existing members share the IDs out-of-band (Slack DM, 1Password shared vault, etc.).
+
+## Drive Workspace Structure
 
 ```
-ECC-Team-Workspace/               root:       1il04nQKRFc-gYgmvO5de0PMKpFVEv2Oh
-  ├── agents/                     agents:     1vaAGaitA9ccmnFtJ7mcp8ywdz7zDwBPY
-  ├── memory/                     memory:     14iVC7OLrDoQ9ZbAz5VpZ-GLbZ9VoaqmZ
-  ├── cost-logs/                  cost_logs:  1Y0_a65zSNP8UYXpsFn0Sj6Zpxi8wAAdU
-  │   └── ECC Cost Tracking       sheet:      16fRezVWzx5KVk3zkdHcMgLl1qrVAPoflkjuxgBfVewY
-  ├── audit/                      audit:      1zmtFspK2xR6SrVuro25BMELWLp1T8GUF
-  └── instincts/                  instincts:  1WBJclsVzvIBxjHHAmQwgmCa_6mW-WWdz
+ECC-Team-Workspace/               $ECC_DRIVE_ROOT
+  ├── agents/                     $ECC_DRIVE_AGENTS
+  ├── memory/                     $ECC_DRIVE_MEMORY
+  ├── cost-logs/                  $ECC_DRIVE_COST_LOGS
+  │   └── ECC Cost Tracking       $ECC_SHEETS_COST_ID  (Google Sheet)
+  ├── audit/                      $ECC_DRIVE_AUDIT
+  └── instincts/                  $ECC_DRIVE_INSTINCTS
 ```
 
 ## Cost Tracking Sheet — Tab Schema
 
-Sheet ID: `16fRezVWzx5KVk3zkdHcMgLl1qrVAPoflkjuxgBfVewY`
+Sheet ID loaded from `$ECC_SHEETS_COST_ID`.
 
 | Tab | Columns |
 |-----|---------|
@@ -30,9 +49,9 @@ Sheet ID: `16fRezVWzx5KVk3zkdHcMgLl1qrVAPoflkjuxgBfVewY`
 ## How to Read from Sheets (GWS)
 
 ```
-path: sheets.spreadsheets.values.get
+mcp__Legal_API__gws path=sheets.spreadsheets.values.get
 params: {
-  "spreadsheetId": "16fRezVWzx5KVk3zkdHcMgLl1qrVAPoflkjuxgBfVewY",
+  "spreadsheetId": "$ECC_SHEETS_COST_ID",
   "range": "memory_entries!A2:F",
   "majorDimension": "ROWS"
 }
@@ -41,37 +60,33 @@ params: {
 ## How to Append a Row to Sheets (GWS)
 
 ```
-path: sheets.spreadsheets.values.append
+mcp__Legal_API__gws path=sheets.spreadsheets.values.append
 params: {
-  "spreadsheetId": "16fRezVWzx5KVk3zkdHcMgLl1qrVAPoflkjuxgBfVewY",
+  "spreadsheetId": "$ECC_SHEETS_COST_ID",
   "range": "cost_log!A:J",
   "valueInputOption": "RAW",
   "insertDataOption": "INSERT_ROWS"
 }
-json_body: {
-  "values": [["2026-09-06", "jim", "ECC", "session_abc", "sonnet", 12000, 3000, 0.045, "code-reviewer", "reviewed auth module"]]
-}
+json_body: { "values": [[date, user, project, session_id, model_tier, tokens_in, tokens_out, cost_usd, agent_name, task_summary]] }
 ```
 
-## How to Upload a File to Drive (GWS)
+## How to Upload a File to Drive
 
 ```
-path: drive.files.create
-params: {"fields": "id,name"}
-json_body: {
-  "name": "agent-audit-2026-09-06.md",
-  "parents": ["1zmtFspK2xR6SrVuro25BMELWLp1T8GUF"],
-  "mimeType": "text/plain"
-}
+mcp__Google_Drive__create_file
+  title: "agent-audit-YYYY-MM-DD.md"
+  parentId: "$ECC_DRIVE_AUDIT"
+  contentMimeType: "text/plain"
+  textContent: <file contents>
+  disableConversionToGoogleType: true
 ```
-Use `mcp__Google_Drive__create_file` with `parentId` for simpler uploads.
 
 ## How to List Files in a Folder
 
 ```
-path: drive.files.list
+mcp__Legal_API__gws path=drive.files.list
 params: {
-  "q": "'14iVC7OLrDoQ9ZbAz5VpZ-GLbZ9VoaqmZ' in parents and trashed = false",
+  "q": "'$ECC_DRIVE_MEMORY' in parents and trashed = false",
   "fields": "files(id,name,modifiedTime)",
   "orderBy": "modifiedTime desc"
 }
@@ -81,10 +96,9 @@ params: {
 
 - **MCP only**: Drive and GWS are only accessible from within a Claude Code agent session.
   Shell hooks cannot call these tools — all sync must be agent-invoked (slash commands).
-- **Account**: authorityandbrand@gmail.com only. The Legal API GWS tool uses the same account.
-- **BigQuery**: `mcp__Legal_API__run_bigquery` is read-only against the legal_case dataset.
-  Cannot create new datasets or tables via current credentials. Use Sheets for structured data.
-- **Cloudflare D1**: No MCP tools or wrangler CLI available. Future upgrade path.
+- **BigQuery**: `mcp__Legal_API__run_bigquery` is read-only. Cannot create new datasets.
+  Use Sheets for structured team data. BigQuery write access = future upgrade path.
+- **Cloudflare D1**: No MCP tools or wrangler CLI available. Future fast-cache upgrade path.
 
 ## Cost Estimation (Sheets-based cache)
 
@@ -97,11 +111,11 @@ params: {
 
 ## Agent Versioning
 
-Canonical agent definitions live in the **repo** at `ECC/agents/*.md`.
-Installed agents live at `~/.claude/agents/*.md`.
+Canonical agent definitions: **repo** `ECC/agents/*.md` (git, source of truth).
+Installed agents: `~/.claude/agents/*.md`.
 
-`scripts/sync-agents.sh` diffs the two and warns on divergence.
-Run it after `git pull` or call `/team-sync pull` which runs it automatically.
+`scripts/sync-agents.sh` diffs the two and reports divergence.
+Run after `git pull` or call `/team-sync pull` (runs it automatically).
 
-The Drive `agents/` folder stores **exported snapshots** for non-git team members —
-not the source of truth. Git is the source of truth for agent definitions.
+The Drive `agents/` folder stores exported snapshots for non-git team members —
+not the source of truth.
