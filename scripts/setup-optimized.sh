@@ -9,8 +9,9 @@
 #   2. Removes unused language rule packs (keeps only common/ by default)
 #   3. Writes the quiet-noisy-commands PreToolUse hook
 #   4. Writes the truncate-bash-output PostToolUse safety-net hook
-#   5. Wires both hooks into ~/.claude/settings.json
-#   6. Downgrades simple/mechanical agents from sonnet → haiku
+#   5. Wires both hooks + context/thinking settings into ~/.claude/settings.json
+#   6. Downgrades simple/mechanical agents from sonnet → haiku (installed copies only,
+#      never the repo's own agents/ — keeps the working tree clean)
 #   7. Downgrades complex-but-not-architectural agents from opus → sonnet
 #
 # To keep specific language rule packs, pass them as arguments:
@@ -172,6 +173,7 @@ if os.path.exists(path):
     except: pass
 
 existing.setdefault("includeCoAuthoredBy", False)
+existing.setdefault("alwaysThinkingEnabled", True)
 h = os.path.expanduser('~')
 clv2 = f"{h}/.claude/skills/continuous-learning-v2/hooks/observe.sh"
 existing["hooks"] = {
@@ -266,13 +268,11 @@ SONNET_DOWNGRADE=(
 
 apply_model() {
   local model="$1" name="$2"
-  for dir in "$CLAUDE_DIR/agents" "$REPO_DIR/agents"; do
-    local f="$dir/$name.md"
-    if [ -f "$f" ]; then
-      sed -i "s/^model: .*/model: $model/" "$f"
-      echo "  $model: $name"
-    fi
-  done
+  local f="$CLAUDE_DIR/agents/$name.md"
+  if [ -f "$f" ]; then
+    sed -i "s/^model: .*/model: $model/" "$f"
+    echo "  $model: $name"
+  fi
 }
 
 for name in "${HAIKU_AGENTS[@]}"; do  apply_model haiku  "$name"; done
