@@ -208,6 +208,11 @@
         "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
       },
       "description": "AI agent regression testing — snapshot behavior, detect regressions in tool calls and output quality. 8 tools: create_test, run_snapshot, run_check, list_tests, validate_skill, generate_skill_tests, run_skill_test, generate_visual_report. API key optional — deterministic checks (tool diff, output hash) work without it. Install: pip install \"evalview>=0.5,<1\""
+    },
+    "ecc-team-workspace": {
+      "command": "node",
+      "args": ["~/.claude/mcp/team-workspace-mcp.js"],
+      "description": "ECC Team Workspace — 7 native MCP tools wrapping the Apps Script Web App cache layer: team_health, team_pull, team_write_cost, team_write_memory, team_write_instinct, team_write_audit, team_invalidate. Reads ECC_WEBAPP_URL and ECC_WEBAPP_TOKEN from ~/.ecc/team-workspace.env. Install: bash scripts/setup-optimized.sh (copies server to ~/.claude/mcp/ and wires it into ~/.claude/settings.json). No Cloudflare dependency — all writes go via CacheService → Sheets → BigQuery through the Apps Script Web App."
     }
   },
   "_comments": {

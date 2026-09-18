@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "totalCommands": 94,
+  "totalCommands": 95,
   "commands": [
     {
       "command": "aside",
@@ -982,6 +982,15 @@
       "path": "commands/skill-health.md"
     },
     {
+      "command": "team-sync",
+      "description": "Sync with ECC team workspace — pull shared memory/instincts at session start, push cost/findings at session end.",
+      "type": "orchestration",
+      "primaryAgents": [],
+      "allAgents": [],
+      "skills": [],
+      "path": "commands/team-sync.md"
+    },
+    {
       "command": "test-coverage",
       "description": "Analyze coverage, identify gaps, and generate missing tests toward the target threshold.",
       "type": "testing",
@@ -1030,7 +1039,7 @@
     "byType": {
       "build": 2,
       "general": 10,
-      "orchestration": 11,
+      "orchestration": 12,
       "planning": 2,
       "refactoring": 1,
       "review": 15,

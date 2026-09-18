@@ -255,6 +255,7 @@ commands:
   - setup-pm
   - skill-create
   - skill-health
+  - team-sync
   - test-coverage
   - update-codemaps
   - update-docs
