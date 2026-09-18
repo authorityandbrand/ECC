@@ -252,7 +252,6 @@ echo "[6/6] Setting agent model assignments..."
 HAIKU_AGENTS=(
   refactor-cleaner      # runs knip/depcheck, removes dead code
   code-simplifier       # mechanical simplification passes
-  type-design-analyzer  # structural type shape analysis
   pr-test-analyzer      # coverage counting and gap detection
   agent-evaluator       # rubric scoring against a fixed 5-axis scale
   opensource-sanitizer  # regex pattern scanning for secrets/PII
