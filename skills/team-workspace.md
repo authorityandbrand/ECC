@@ -13,7 +13,8 @@ source ~/.ecc/team-workspace.env
 # Exports: ECC_DRIVE_ROOT, ECC_DRIVE_AGENTS, ECC_DRIVE_MEMORY,
 #          ECC_DRIVE_COST_LOGS, ECC_DRIVE_AUDIT, ECC_DRIVE_INSTINCTS,
 #          ECC_SHEETS_COST_ID, ECC_GWS_ACCOUNT,
-#          ECC_WEBAPP_URL, ECC_WEBAPP_TOKEN
+#          ECC_WEBAPP_URL, ECC_WEBAPP_TOKEN,
+#          ECC_APPS_SCRIPT_ID, ECC_APPS_SCRIPT_DEPLOYMENT_ID
 ```
 
 To initialize for a new team member, run:
@@ -102,8 +103,8 @@ it internally uses CacheService (~5ms) → Sheets (~150ms) → BigQuery (analyti
 - `$ECC_WEBAPP_URL` — HTTPS endpoint
 - `$ECC_WEBAPP_TOKEN` — bearer token (query param `token=`)
 
-**Script ID**: `1f-WjrlYNzwUmO65yYyMgCRR8uJJZBzMExLNcut7_pJ7K1zImebm1JQ76`
-**Deployment ID**: `AKfycbz9q8aa6oPGeA5aGqQE4xLsJ_hcfi_0lZVx2PTNWruzVIdG0p9GH-WCs_qNDf3dsYQo2Q` (v3)
+**Script ID**: `$ECC_APPS_SCRIPT_ID` (loaded from `~/.ecc/team-workspace.env` — not committed)
+**Deployment ID**: `$ECC_APPS_SCRIPT_DEPLOYMENT_ID` (loaded from `~/.ecc/team-workspace.env` — not committed; current version noted alongside the value when shared out-of-band)
 **OAuth scopes (full GWS set)**: Sheets, BigQuery, Drive, Gmail (send/read/modify), Calendar, Calendar Events, Docs, Presentations, Forms, Tasks, UrlFetch, ScriptApp, SendMail, Cloud Platform, userinfo
 
 ### One-time setup (required after first deploy or scope change)
@@ -117,7 +118,7 @@ This stores the sheet ID and secret token in Apps Script properties and creates 
 
 To re-authorize after a scope change, open the script editor and run any function:
 ```
-https://script.google.com/d/1f-WjrlYNzwUmO65yYyMgCRR8uJJZBzMExLNcut7_pJ7K1zImebm1JQ76/edit
+https://script.google.com/d/$ECC_APPS_SCRIPT_ID/edit
 ```
 
 ### Endpoints (GET)
