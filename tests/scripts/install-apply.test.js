@@ -323,7 +323,7 @@ function runTests() {
       );
       assert.deepStrictEqual(
         tddGuide.tools,
-        ['view_file', 'write_to_file', 'replace_file_content', 'run_command', 'grep_search']
+        ['view_file', 'write_to_file', 'replace_file_content', 'run_command', 'grep_search', 'find_by_name']
       );
       assert.strictEqual(tddGuide.model, 'pro');
       const docsLookup = readMarkdownFrontmatter(
