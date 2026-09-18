@@ -182,3 +182,25 @@ Run after `git pull` or call `/team-sync pull` (runs it automatically).
 
 The Drive `agents/` folder stores exported snapshots for non-git team members —
 not the source of truth.
+
+## Self-Improvement Loop
+
+When a gap surfaces mid-session — an `agent-auditor` finding, a stale skill section,
+a hook that no-ops silently, a mis-tiered agent — fix it in the **same session**,
+same branch, same push. Do not spawn a separate task/session for a fix that is:
+
+- small and local (one agent's `model:` line, one hook's guard clause, one skill
+  section out of date with the code it documents)
+- verifiable in the current session (you can re-run the script, re-call the MCP
+  tool, or re-read the file to confirm the fix)
+- not an architectural change requiring a design decision from the user
+
+Spawning a separate session only adds latency and loses the context that found
+the gap in the first place. Reserve `spawn_task` / a new session for work that
+is genuinely out of scope for the current branch or needs review before it starts.
+
+This mirrors `continuous-learning-v2`: instincts captured during a session get
+promoted to skills/commands/agents without waiting for a dedicated "cleanup"
+session. Apply the same standard to this skill file itself — when a section
+here goes stale (an endpoint changes, a constraint is lifted), edit it directly
+and push, the same way `agent-audit.md` findings got applied in-session above.
