@@ -58,7 +58,6 @@ For each finding:
 - impact
 - fix recommendation
 
-
 ## Persistence (Session Continuity)
 
 Write findings to disk at the end of every run so they survive session boundaries:

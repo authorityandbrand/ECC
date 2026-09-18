@@ -57,7 +57,7 @@ dotnet fsi --exec path/to/script.fsx 2>&1 || true
 | `FS0039: The value or constructor 'X' is not defined` | Used before defined, or file ordered wrong in `.fsproj` | Move `<Compile Include>` earlier, or reorder `let`/`type` within file |
 | `FS0064: This construct causes code to be less generic than indicated` | Value restriction — non-function value with generic type | Add explicit type annotation or eta-expand (`let f x = g x` instead of `let f = g`) |
 | `FS0001: Type mismatch. Expecting X but given Y` | Type inference conflict, often from forward-reference guess | Add explicit type annotations to narrow inference order |
-| `FS0025: Incomplete pattern matches on this expression` | Missing case in `match`/`function` | Add missing case or explicit `| _ ->` (only if truly exhaustive-safe) |
+| `FS0025: Incomplete pattern matches on this expression` | Missing case in `match`/`function` | Add missing case or explicit `\| _ ->` (only if truly exhaustive-safe) |
 | `FS0035: This construct is deprecated` | Legacy OCaml-style syntax | Use the suggested modern F# syntax (compiler message names it) |
 | `FS0193: Type constraint mismatch` | Generic constraint violation (e.g. missing `IComparable`) | Add constraint to function signature or use a concrete type |
 | `error FS0198: mismatch in unit of measure` | Units of measure applied inconsistently | Align units across the expression or strip with `float`/`int` cast |

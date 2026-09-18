@@ -205,7 +205,6 @@ TOP IMPROVEMENTS:
 VERDICT: Redo with specific fixes. Weakest axis: Accuracy (2/5).
 ```
 
-
 ## Persistence (Session Continuity)
 
 Append every evaluation to a rolling scores log so quality trends are trackable:

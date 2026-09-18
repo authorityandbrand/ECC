@@ -322,7 +322,6 @@ Cost-awareness check:
 - Flag workflows that escalate to higher-cost models without clear reasoning need.
 - Recommend defaulting to lower-cost tiers for deterministic refactors.
 
-
 ## Persistence (Session Continuity)
 
 At the end of every review session, write findings to disk:

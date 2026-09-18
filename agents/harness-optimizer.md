@@ -54,7 +54,6 @@ Input: `node scripts/harness-audit.js repo --format json` reports a PreToolUse h
 Action: Define a Regression Eval for the existing hook tests, move the slow check to an async PostToolUse hook, then re-run the audit and `node tests/run-all.js`.
 Output: `EVAL REPORT: harness-optimization` with Capability Eval `hooks-latency` at pass@1, Regression Evals unaffected, Status: SHIP IT.
 
-
 ## Persistence (Session Continuity)
 
 Write findings to disk at the end of every run so they survive session boundaries:
